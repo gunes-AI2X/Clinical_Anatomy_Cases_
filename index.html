@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JABSOM Clinical Cases — MD 6</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background: #f0f2f5; color: #1a1a1a; min-height: 100vh; }
+
+  /* ---- HEADER ---- */
+  .site-header { background: linear-gradient(135deg, #1a4d8f 0%, #0d6efd 100%); padding: 48px 24px 40px; text-align: center; color: #fff; }
+  .site-header .school { font-size: 13px; opacity: 0.75; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 10px; }
+  .site-header h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; line-height: 1.2; }
+  .site-header .subtitle { font-size: 15px; opacity: 0.85; max-width: 520px; margin: 0 auto; line-height: 1.6; }
+  .header-badges { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+  .header-badge { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); border-radius: 20px; padding: 5px 14px; font-size: 12px; color: #fff; }
+
+  /* ---- MAIN ---- */
+  .main { max-width: 860px; margin: 0 auto; padding: 40px 20px 60px; }
+
+  /* ---- SEARCH / FILTER ---- */
+  .controls { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 28px; align-items: center; }
+  .search-wrap { flex: 1; min-width: 200px; position: relative; }
+  .search-wrap input { width: 100%; padding: 10px 16px 10px 38px; border: 1.5px solid #e5e7eb; border-radius: 10px; font-size: 14px; font-family: inherit; background: #fff; color: #1a1a1a; outline: none; transition: border-color 0.2s; }
+  .search-wrap input:focus { border-color: #1a4d8f; }
+  .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 15px; color: #aaa; pointer-events: none; }
+  .filter-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+  .filter-btn { padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1.5px solid #e5e7eb; background: #fff; color: #555; font-family: inherit; transition: all 0.15s; }
+  .filter-btn:hover { background: #f0f4ff; border-color: #a5b4fc; }
+  .filter-btn.active { background: #1a4d8f; color: #fff; border-color: #1a4d8f; }
+
+  /* ---- SECTION HEADER ---- */
+  .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; margin-top: 8px; }
+  .section-header h2 { font-size: 15px; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 0.05em; }
+  .section-line { flex: 1; height: 1px; background: #e5e7eb; }
+  .section-count { font-size: 12px; color: #aaa; }
+
+  /* ---- CASE GRID ---- */
+  .case-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin-bottom: 40px; }
+
+  /* ---- CASE CARD ---- */
+  .case-card { background: #fff; border: 1.5px solid #e5e7eb; border-radius: 14px; overflow: hidden; transition: all 0.18s; cursor: pointer; text-decoration: none; color: inherit; display: flex; flex-direction: column; }
+  .case-card:hover { box-shadow: 0 8px 28px rgba(0,0,0,0.10); transform: translateY(-2px); border-color: #a5b4fc; }
+  .case-card.locked { opacity: 0.55; cursor: default; pointer-events: none; }
+  .case-card.locked:hover { box-shadow: none; transform: none; border-color: #e5e7eb; }
+
+  .card-color-bar { height: 5px; }
+  .card-body { padding: 18px 18px 14px; flex: 1; display: flex; flex-direction: column; }
+  .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .card-week { font-size: 11px; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: 0.05em; }
+  .card-status { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 20px; }
+  .status-available { background: #e8f5ee; color: #1a7a47; }
+  .status-coming    { background: #f0f0f0; color: #999; }
+  .status-new       { background: #fef3c7; color: #b45309; }
+
+  .card-title-text { font-size: 15px; font-weight: 700; color: #111; margin-bottom: 6px; line-height: 1.3; }
+  .card-patient { font-size: 12px; color: #888; margin-bottom: 10px; }
+  .card-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: auto; padding-top: 10px; }
+  .card-tag { font-size: 10px; padding: 2px 8px; border-radius: 10px; background: #f0f2f5; color: #666; font-weight: 500; }
+
+  .card-footer { padding: 12px 18px; border-top: 1px solid #f0f0f0; display: flex; align-items: center; justify-content: space-between; }
+  .card-footer-left { font-size: 11px; color: #aaa; }
+  .card-arrow { font-size: 14px; color: #1a4d8f; }
+  .case-card.locked .card-arrow { color: #ccc; }
+
+  /* ---- EMPTY STATE ---- */
+  .empty-state { text-align: center; padding: 48px 20px; color: #aaa; }
+  .empty-state .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+
+  /* ---- PROGRESS SUMMARY ---- */
+  .summary-bar { background: #fff; border: 1.5px solid #e5e7eb; border-radius: 14px; padding: 20px 24px; margin-bottom: 32px; display: flex; gap: 24px; flex-wrap: wrap; align-items: center; }
+  .summary-stat { text-align: center; }
+  .summary-num { font-size: 24px; font-weight: 700; color: #1a4d8f; }
+  .summary-label { font-size: 11px; color: #aaa; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
+  .summary-divider { width: 1px; background: #e5e7eb; align-self: stretch; }
+  .summary-prog { flex: 1; min-width: 160px; }
+  .summary-prog-label { font-size: 12px; color: #555; margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .prog-track { height: 8px; background: #f0f0f0; border-radius: 4px; overflow: hidden; }
+  .prog-fill  { height: 100%; background: linear-gradient(90deg, #1a4d8f, #0d6efd); border-radius: 4px; transition: width 0.5s ease; }
+
+  /* ---- HOW TO ADD ---- */
+  .add-case-card { background: #f8f9fb; border: 2px dashed #c7d2fe; border-radius: 14px; padding: 24px; text-align: center; color: #6d7280; }
+  .add-case-card h3 { font-size: 14px; font-weight: 700; color: #1a4d8f; margin-bottom: 8px; }
+  .add-case-card p  { font-size: 12px; line-height: 1.7; }
+  .add-case-card code { background: #e8f0fe; color: #1a4d8f; padding: 1px 6px; border-radius: 4px; font-size: 11px; }
+
+  /* ---- FOOTER ---- */
+  .site-footer { text-align: center; padding: 24px; font-size: 12px; color: #aaa; border-top: 1px solid #e5e7eb; margin-top: 20px; }
+
+  /* ---- NO RESULTS ---- */
+  .hidden { display: none !important; }
+
+  @media (max-width: 500px) {
+    .site-header h1 { font-size: 22px; }
+    .main { padding: 24px 14px 40px; }
+    .summary-bar { gap: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="school">John A. Burns School of Medicine</div>
+  <h1>MD 6 Clinical Cases</h1>
+  <p class="subtitle">Locomotor System, Nervous System &amp; Behavioral Problems — Interactive case library for MDED-556L</p>
+  <div class="header-badges">
+    <span class="header-badge">🎓 FA 2026</span>
+    <span class="header-badge">👥 Class of 77</span>
+    <span class="header-badge">📍 JABSOM</span>
+  </div>
+</header>
+
+<main class="main">
+
+  <!-- Progress summary -->
+  <div class="summary-bar">
+    <div class="summary-stat">
+      <div class="summary-num" id="totalCases">1</div>
+      <div class="summary-label">Cases Available</div>
+    </div>
+    <div class="summary-divider"></div>
+    <div class="summary-stat">
+      <div class="summary-num" id="totalWeeks">8</div>
+      <div class="summary-label">Total Weeks</div>
+    </div>
+    <div class="summary-divider"></div>
+    <div class="summary-stat">
+      <div class="summary-num" id="totalFormats">5</div>
+      <div class="summary-label">Activity Formats</div>
+    </div>
+    <div class="summary-divider"></div>
+    <div class="summary-prog">
+      <div class="summary-prog-label"><span>Course progress</span><span id="progPct">13%</span></div>
+      <div class="prog-track"><div class="prog-fill" id="progFill" style="width:13%"></div></div>
+    </div>
+  </div>
+
+  <!-- Search + filter -->
+  <div class="controls">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Search cases by title, system, or keyword…" oninput="filterCards()">
+    </div>
+    <div class="filter-btns">
+      <button class="filter-btn active" onclick="setFilter('all', this)">All</button>
+      <button class="filter-btn" onclick="setFilter('available', this)">Available</button>
+      <button class="filter-btn" onclick="setFilter('coming', this)">Coming soon</button>
+    </div>
+  </div>
+
+  <!-- Case grid -->
+  <div id="caseContainer">
+
+    <!-- ======================================================
+         CASE LIST — ADD NEW CASES HERE
+         To add a case: copy one <a class="case-card"> block,
+         update the content, set href to your .html filename,
+         and change status to "available".
+         To mark as coming soon: set status="coming" and
+         add the class "locked" to the <a> tag.
+         ====================================================== -->
+
+    <div class="section-header">
+      <h2>Week 1</h2>
+      <div class="section-line"></div>
+      <div class="section-count">1 case</div>
+    </div>
+
+    <div class="case-grid" id="grid-w1">
+
+      <!-- CASE WEEK 1 — AVAILABLE -->
+      <a class="case-card" href="clinical-case-template.html"
+         data-status="available"
+         data-tags="emphysema,fascial spaces,neck anatomy,odontogenic,airway">
+        <div class="card-color-bar" style="background:linear-gradient(90deg,#1a4d8f,#0d6efd)"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-week">Week 1</div>
+            <span class="card-status status-new">🆕 New</span>
+          </div>
+          <div class="card-title-text">Cervicofacial Subcutaneous Emphysema</div>
+          <div class="card-patient">33-year-old female · Post-endodontic · Emergency Room</div>
+          <div class="card-tags">
+            <span class="card-tag">Fascial spaces</span>
+            <span class="card-tag">Neck anatomy</span>
+            <span class="card-tag">Odontogenic</span>
+            <span class="card-tag">Airway</span>
+          </div>
+        </div>
+        <div class="card-footer">
+          <span class="card-footer-left">⏱ ~20 min &nbsp;·&nbsp; 5 quiz Qs &nbsp;·&nbsp; 5 formats</span>
+          <span class="card-arrow">→</span>
+        </div>
+      </a>
+
+    </div><!-- end grid-w1 -->
+
+    <!-- ======================================================
+         WEEKS 2–8 — COMING SOON (templates)
+         Duplicate and fill in as you build each case.
+         ====================================================== -->
+
+    <div class="section-header" style="margin-top:32px">
+      <h2>Weeks 2 – 8</h2>
+      <div class="section-line"></div>
+      <div class="section-count">Coming soon</div>
+    </div>
+
+    <div class="case-grid" id="grid-coming">
+
+      <a class="case-card locked" href="#"
+         data-status="coming"
+         data-tags="">
+        <div class="card-color-bar" style="background:#e5e7eb"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-week">Week 2</div>
+            <span class="card-status status-coming">Coming soon</span>
+          </div>
+          <div class="card-title-text" style="color:#aaa">Case title TBA</div>
+          <div class="card-patient" style="color:#bbb">Patient details TBA</div>
+          <div class="card-tags"><span class="card-tag" style="color:#ccc">–</span></div>
+        </div>
+        <div class="card-footer">
+          <span class="card-footer-left">–</span>
+          <span class="card-arrow" style="color:#ccc">🔒</span>
+        </div>
+      </a>
+
+      <a class="case-card locked" href="#"
+         data-status="coming"
+         data-tags="">
+        <div class="card-color-bar" style="background:#e5e7eb"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-week">Week 3</div>
+            <span class="card-status status-coming">Coming soon</span>
+          </div>
+          <div class="card-title-text" style="color:#aaa">Case title TBA</div>
+          <div class="card-patient" style="color:#bbb">Patient details TBA</div>
+          <div class="card-tags"><span class="card-tag" style="color:#ccc">–</span></div>
+        </div>
+        <div class="card-footer">
+          <span class="card-footer-left">–</span>
+          <span class="card-arrow" style="color:#ccc">🔒</span>
+        </div>
+      </a>
+
+      <a class="case-card locked" href="#"
+         data-status="coming"
+         data-tags="">
+        <div class="card-color-bar" style="background:#e5e7eb"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-week">Week 4</div>
+            <span class="card-status status-coming">Coming soon</span>
+          </div>
+          <div class="card-title-text" style="color:#aaa">Case title TBA</div>
+          <div class="card-patient" style="color:#bbb">Patient details TBA</div>
+          <div class="card-tags"><span class="card-tag" style="color:#ccc">–</span></div>
+        </div>
+        <div class="card-footer">
+          <span class="card-footer-left">–</span>
+          <span class="card-arrow" style="color:#ccc">🔒</span>
+        </div>
+      </a>
+
+      <a class="case-card locked" href="#"
+         data-status="coming"
+         data-tags="">
+        <div class="card-color-bar" style="background:#e5e7eb"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-week">Week 5</div>
+            <span class="card-status status-coming">Coming soon</span>
+          </div>
+          <div class="card-title-text" style="color:#aaa">Case title TBA</div>
+          <div class="card-patient" style="color:#bbb">Patient details TBA</div>
+          <div class="card-tags"><span class="card-tag" style="color:#ccc">–</span></div>
+        </div>
+        <div class="card-footer">
+          <span class="card-footer-left">–</span>
+          <span class="card-arrow" style="color:#ccc">🔒</span>
+        </div>
+      </a>
+
+      <a class="case-card locked" href="#"
+         data-status="coming"
+         data-tags="">
+        <div class="card-color-bar" style="background:#e5e7eb"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-week">Week 6</div>
+            <span class="card-status status-coming">Coming soon</span>
+          </div>
+          <div class="card-title-text" style="color:#aaa">Case title TBA</div>
+          <div class="card-patient" style="color:#bbb">Patient details TBA</div>
+          <div class="card-tags"><span class="card-tag" style="color:#ccc">–</span></div>
+        </div>
+        <div class="card-footer">
+          <span class="card-footer-left">–</span>
+          <span class="card-arrow" style="color:#ccc">🔒</span>
+        </div>
+      </a>
+
+      <a class="case-card locked" href="#"
+         data-status="coming"
+         data-tags="">
+        <div class="card-color-bar" style="background:#e5e7eb"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-week">Week 7</div>
+            <span class="card-status status-coming">Coming soon</span>
+          </div>
+          <div class="card-title-text" style="color:#aaa">Case title TBA</div>
+          <div class="card-patient" style="color:#bbb">Patient details TBA</div>
+          <div class="card-tags"><span class="card-tag" style="color:#ccc">–</span></div>
+        </div>
+        <div class="card-footer">
+          <span class="card-footer-left">–</span>
+          <span class="card-arrow" style="color:#ccc">🔒</span>
+        </div>
+      </a>
+
+      <a class="case-card locked" href="#"
+         data-status="coming"
+         data-tags="">
+        <div class="card-color-bar" style="background:#e5e7eb"></div>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="card-week">Week 8</div>
+            <span class="card-status status-coming">Coming soon</span>
+          </div>
+          <div class="card-title-text" style="color:#aaa">Case title TBA</div>
+          <div class="card-patient" style="color:#bbb">Patient details TBA</div>
+          <div class="card-tags"><span class="card-tag" style="color:#ccc">–</span></div>
+        </div>
+        <div class="card-footer">
+          <span class="card-footer-left">–</span>
+          <span class="card-arrow" style="color:#ccc">🔒</span>
+        </div>
+      </a>
+
+    </div><!-- end grid-coming -->
+
+    <!-- Empty search state -->
+    <div class="empty-state hidden" id="emptyState">
+      <div class="empty-icon">🔍</div>
+      <p>No cases match your search.<br>Try different keywords or clear the filter.</p>
+    </div>
+
+    <!-- ======================================================
+         HOW TO ADD A NEW CASE
+         ====================================================== -->
+    <div class="add-case-card" style="margin-top:12px">
+      <h3>➕ Adding a new case</h3>
+      <p>
+        Duplicate <code>clinical-case-template.html</code> → rename it (e.g. <code>case-week2.html</code>) →
+        edit the <code>CASE_DATA</code> block at the top with your new case content →
+        copy the case card HTML above, update the <code>href</code>, title, patient, tags, and change
+        <code>status-coming</code> to <code>status-available</code> and remove the <code>locked</code> class →
+        push to GitHub. Done.
+      </p>
+    </div>
+
+  </div><!-- end caseContainer -->
+
+</main>
+
+<footer class="site-footer">
+  MDED-556L &nbsp;·&nbsp; John A. Burns School of Medicine &nbsp;·&nbsp;
+  Built with the JABSOM Interactive Case Template &nbsp;·&nbsp;
+  <a href="https://github.com" style="color:#1a4d8f;text-decoration:none">GitHub</a>
+</footer>
+
+<script>
+  var activeFilter = 'all';
+
+  function setFilter(val, btn) {
+    activeFilter = val;
+    document.querySelectorAll('.filter-btn').forEach(function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    filterCards();
+  }
+
+  function filterCards() {
+    var query = document.getElementById('searchInput').value.toLowerCase().trim();
+    var cards = document.querySelectorAll('.case-card');
+    var visible = 0;
+
+    cards.forEach(function(card) {
+      var status = card.getAttribute('data-status') || '';
+      var tags   = card.getAttribute('data-tags') || '';
+      var text   = (card.innerText || card.textContent || '').toLowerCase();
+      var combined = text + ' ' + tags;
+
+      var matchesFilter = activeFilter === 'all' ||
+        (activeFilter === 'available' && status === 'available') ||
+        (activeFilter === 'coming'    && status === 'coming');
+
+      var matchesSearch = !query || combined.indexOf(query) !== -1;
+
+      if (matchesFilter && matchesSearch) {
+        card.classList.remove('hidden');
+        visible++;
+      } else {
+        card.classList.add('hidden');
+      }
+    });
+
+    document.getElementById('emptyState').classList.toggle('hidden', visible > 0);
+
+    // Hide section headers if all cards in that section are hidden
+    ['w1','coming'].forEach(function(id) {
+      var grid = document.getElementById('grid-' + id);
+      if (!grid) return;
+      var anyVisible = Array.from(grid.querySelectorAll('.case-card')).some(function(c){
+        return !c.classList.contains('hidden');
+      });
+      var header = grid.previousElementSibling;
+      if (header && header.classList.contains('section-header')) {
+        header.classList.toggle('hidden', !anyVisible);
+      }
+    });
+  }
+</script>
+
+</body>
+</html>

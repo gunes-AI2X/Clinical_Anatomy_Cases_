@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clinical Case Template</title>
+
+<!--
+  ============================================================
+  JABSOM INTERACTIVE CLINICAL CASE TEMPLATE
+  ============================================================
+  HOW TO USE THIS TEMPLATE FOR A NEW CASE:
+  1. Scroll to the "CASE DATA — EDIT HERE" section below
+  2. Replace all the content inside CASE_DATA = { ... }
+  3. Do NOT touch anything outside that block unless you want
+     to change the visual design
+  4. Save as a new .html file (e.g. case-week2.html)
+  5. Upload to GitHub and enable GitHub Pages to host it
+
+  GITHUB PAGES SETUP:
+  - Push your files to a GitHub repository
+  - Go to Settings → Pages → Source: main branch / root
+  - Your case will be live at:
+    https://yourusername.github.io/your-repo/case-week1.html
+
+  TEMPLATE VERSION: 1.0
+  CREATED BY: John A. Burns School of Medicine
+  ============================================================
+-->
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background: #f0f2f5; color: #1a1a1a; min-height: 100vh; padding: 24px 16px; }
+  .app { max-width: 740px; margin: 0 auto; background: #fff; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.10); overflow: hidden; }
+  .app-header { padding: 28px 32px 24px; color: #fff; }
+  h1.case-title { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+  .case-meta { font-size: 13px; opacity: 0.85; }
+  .progress-wrap { padding: 20px 32px 0; }
+  .progress-labels { display: flex; justify-content: space-between; margin-bottom: 8px; }
+  .progress-label { font-size: 11px; color: #999; text-align: center; flex: 1; cursor: pointer; transition: color 0.2s; }
+  .progress-label.active { font-weight: 600; }
+  .progress-label.done { color: #1a8f5a; }
+  .progress-bar { display: flex; gap: 4px; margin-bottom: 20px; }
+  .progress-step { flex: 1; height: 5px; border-radius: 3px; background: #e5e7eb; transition: background 0.3s; }
+  .progress-step.done { background: #1a8f5a; }
+  .app-body { padding: 0 32px 32px; }
+  .section { display: none; }
+  .section.active { display: block; }
+  .section-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 20px; margin-bottom: 14px; margin-top: 24px; letter-spacing: 0.02em; text-transform: uppercase; }
+  h2.sec-title { font-size: 22px; font-weight: 700; color: #111; margin-bottom: 8px; line-height: 1.3; }
+  .lead { font-size: 14px; color: #555; line-height: 1.7; margin-bottom: 20px; }
+  .card { background: #f8f9fb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 18px 20px; margin-bottom: 14px; }
+  .card-title { font-size: 11px; font-weight: 700; color: #999; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; }
+  .vitals-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; }
+  .vital { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px 8px; text-align: center; }
+  .vital-value { font-size: 18px; font-weight: 700; color: #111; }
+  .vital-label { font-size: 10px; color: #999; margin-top: 2px; line-height: 1.3; }
+  .vital-flag { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; display: inline-block; margin-top: 6px; }
+  .flag-normal { background: #e8f5ee; color: #1a7a47; }
+  .flag-watch  { background: #fff3e0; color: #b45309; }
+  .flag-alert  { background: #fde8e8; color: #c0392b; }
+  .sym-list { list-style: none; }
+  .sym-list li { display: flex; align-items: flex-start; gap: 10px; padding: 9px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; line-height: 1.5; color: #333; }
+  .sym-list li:last-child { border-bottom: none; }
+  .sym-icon { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+  .sym-icon.present { background: #fde8e8; color: #c0392b; }
+  .sym-icon.absent  { background: #e8f5ee; color: #1a7a47; }
+  .sym-icon.neutral { background: #f0f0f0; color: #666; }
+  .cue-box { background: #fffbeb; border: 1px solid #fde68a; border-left: 4px solid #f59e0b; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-size: 13px; color: #78350f; line-height: 1.6; }
+  .space-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .space-card { border: 1.5px solid #e5e7eb; border-radius: 10px; padding: 12px 14px; cursor: pointer; transition: all 0.18s; background: #fff; }
+  .space-card:hover { background: #f0f4ff; border-color: #a5b4fc; }
+  .space-card.expanded { border-color: #1a4d8f; background: #eef2ff; }
+  .space-name { font-size: 13px; font-weight: 600; color: #1a1a1a; margin-bottom: 2px; }
+  .space-card.expanded .space-name { color: #1a4d8f; }
+  .space-hint { font-size: 11px; color: #aaa; }
+  .space-detail { font-size: 12px; color: #444; margin-top: 10px; line-height: 1.6; display: none; padding-top: 10px; border-top: 1px solid #dce5f5; }
+  .space-card.expanded .space-detail { display: block; }
+  .diagram-wrap { background: #f8f9fb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+  .diagram-placeholder { background: #eef2ff; border: 2px dashed #a5b4fc; border-radius: 8px; padding: 32px; text-align: center; font-size: 13px; color: #6d7280; line-height: 1.7; }
+  .diff-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; line-height: 1.5; }
+  .diff-item:last-child { border-bottom: none; }
+  .diff-icon { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+  .diff-icon.out { background: #fde8e8; color: #c0392b; }
+  .diff-icon.in  { background: #e8f5ee; color: #1a7a47; }
+  .tag-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  .tag { font-size: 11px; padding: 3px 10px; border-radius: 20px; background: #f0f0f0; color: #555; font-weight: 500; }
+  .quiz-q { margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid #f0f0f0; }
+  .quiz-q:last-child { border-bottom: none; }
+  .quiz-num { font-size: 11px; font-weight: 700; color: #1a4d8f; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .quiz-label { font-size: 14px; font-weight: 600; color: #111; margin-bottom: 12px; line-height: 1.5; }
+  .quiz-options { display: flex; flex-direction: column; gap: 8px; }
+  .quiz-opt { padding: 11px 14px; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: 13px; cursor: pointer; transition: all 0.15s; text-align: left; background: #fff; color: #1a1a1a; font-family: inherit; }
+  .quiz-opt:hover:not([disabled]) { background: #f0f4ff; border-color: #a5b4fc; }
+  .quiz-opt.correct { background: #e8f5ee; border-color: #1a8f5a; color: #1a5c35; font-weight: 600; }
+  .quiz-opt.wrong   { background: #fde8e8; border-color: #c0392b; color: #7b1e1e; }
+  .quiz-opt.reveal  { background: #e8f5ee; border-color: #1a8f5a; color: #1a5c35; opacity: 0.5; }
+  .quiz-feedback { font-size: 12px; margin-top: 10px; padding: 10px 14px; border-radius: 8px; line-height: 1.6; display: none; }
+  .quiz-feedback.correct { background: #e8f5ee; color: #1a5c35; border-left: 3px solid #1a8f5a; }
+  .quiz-feedback.wrong   { background: #fde8e8; color: #7b1e1e; border-left: 3px solid #c0392b; }
+  .score-box { text-align: center; padding: 28px 0 20px; }
+  .score-ring { width: 96px; height: 96px; border-radius: 50%; border: 4px solid #1a4d8f; background: #eef2ff; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto 16px; }
+  .score-num { font-size: 30px; font-weight: 700; color: #1a4d8f; line-height: 1; }
+  .score-denom { font-size: 13px; color: #888; }
+  .score-msg { font-size: 14px; color: #555; margin-bottom: 20px; line-height: 1.5; }
+  .format-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .format-card { border: 1.5px solid #e5e7eb; border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.18s; text-align: left; background: #fff; }
+  .format-card:hover { background: #f0f4ff; border-color: #a5b4fc; }
+  .format-card.selected { border-color: #1a4d8f; background: #eef2ff; }
+  .format-icon { font-size: 28px; margin-bottom: 8px; }
+  .format-name { font-size: 13px; font-weight: 700; color: #1a1a1a; margin-bottom: 4px; }
+  .format-card.selected .format-name { color: #1a4d8f; }
+  .format-desc { font-size: 11px; color: #888; line-height: 1.5; }
+  .rubric-item { display: flex; gap: 12px; padding: 11px 0; border-bottom: 1px solid #f0f0f0; align-items: flex-start; }
+  .rubric-item:last-child { border-bottom: none; }
+  .rubric-check { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #ccc; background: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; font-size: 12px; color: transparent; transition: all 0.18s; margin-top: 1px; }
+  .rubric-check.checked { background: #1a8f5a; border-color: #1a8f5a; color: #fff; }
+  .rubric-text { font-size: 13px; color: #222; line-height: 1.5; }
+  .rubric-text small { display: block; color: #999; font-size: 11px; margin-top: 2px; }
+  .info-box { background: #eef2ff; border: 1px solid #c7d2fe; border-left: 4px solid #1a4d8f; border-radius: 8px; padding: 12px 16px; margin-bottom: 14px; font-size: 13px; color: #1a2e5c; line-height: 1.6; }
+  .nav-row { display: flex; justify-content: space-between; align-items: center; margin-top: 28px; padding-top: 20px; border-top: 1px solid #f0f0f0; }
+  .btn { padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: 1.5px solid #ddd; background: #fff; color: #333; transition: all 0.15s; font-family: inherit; }
+  .btn:hover { background: #f5f5f5; }
+  .btn-primary { color: #fff; border-color: transparent; }
+  .btn-primary:hover { opacity: 0.88; }
+  .quiz-counter { font-size: 13px; color: #999; }
+  .refs { font-size: 12px; color: #555; line-height: 1.8; }
+  @media (max-width: 500px) {
+    .app-body, .progress-wrap { padding-left: 16px; padding-right: 16px; }
+    .space-grid, .format-grid { grid-template-columns: 1fr; }
+    .vitals-grid { grid-template-columns: repeat(3,1fr); }
+    .app-header { padding: 20px 16px 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="app" id="appRoot"></div>
+
+<script>
+/* ============================================================
+   CASE DATA — EDIT EVERYTHING IN THIS BLOCK FOR A NEW CASE
+   ============================================================ */
+var CASE_DATA = {
+
+  /* ---------- HEADER ---------- */
+  course:  "MDED-556L-012: MD 6 Locomotor System, Nervous System & Behavioral Problems",
+  school:  "John A. Burns School of Medicine",
+  week:    "Week 1",
+  // Header gradient — change these two hex colors to restyle the banner
+  headerColor1: "#1a4d8f",
+  headerColor2: "#0d6efd",
+
+  /* ---------- STEP 1: PATIENT PRESENTATION ---------- */
+  presentation: {
+    badge:         "🩺 Clinical Presentation",
+    badgeColor:    "#e8f0fe",
+    badgeTextColor:"#1a4d8f",
+    title:         "33-year-old female — Emergency Room",
+    lead:          "A patient arrives 2 hours after a root canal procedure with rapidly worsening right-sided facial and neck swelling. Review all findings carefully before proceeding.",
+
+    // Chief complaint — plain text
+    chiefComplaint: "Rapid right-sided facial swelling and pain beginning approximately 1 hour after an endodontic (root canal) procedure. Swelling has progressed from the right buccal region down to the clavicle.",
+
+    // Vital signs — add or remove entries freely
+    // flag options: "normal" | "watch" | "alert"
+    vitals: [
+      { value: "97.6°F", label: "Temperature",       flag: "normal", flagText: "Normal"        },
+      { value: "144/67", label: "BP (mmHg)",          flag: "watch",  flagText: "Elevated SBP"  },
+      { value: "87",     label: "Heart Rate (bpm)",   flag: "normal", flagText: "Normal"        },
+      { value: "18",     label: "Resp. Rate (/min)",  flag: "normal", flagText: "Normal"        },
+      { value: "98%",    label: "O₂ Saturation",      flag: "normal", flagText: "Normal"        }
+    ],
+
+    // Physical exam findings
+    // type options: "present" (red ✓) | "absent" (green ✗) | "neutral" (grey →)
+    examFindings: [
+      { type: "present", text: "<strong>Swelling:</strong> Non-erythematous, non-tender; extends from right buccal region to clavicle; follows cervical fascial planes" },
+      { type: "present", text: "<strong>Crepitus:</strong> Present on palpation — a crackling sensation under the skin" },
+      { type: "present", text: "<strong>Jaw symptoms:</strong> Pain on opening and with lateral excursion (trismus)" },
+      { type: "present", text: "<strong>Respiratory:</strong> Mild dyspnea; no dysphagia" },
+      { type: "absent",  text: "<strong>Absent:</strong> No fever, no chills, no nausea, no headache, no systemic infection signs" }
+    ],
+
+    // Lab results
+    labResults: [
+      { text: "<strong>WBC:</strong> 4,450/µL (normal: 4,000–10,800/µL) — <strong style='color:#1a7a47'>Within normal limits</strong>" },
+      { text: "<strong>Neutrophil %:</strong> 66% (normal: 40–73%) — <strong style='color:#1a7a47'>Within normal limits</strong>" },
+      { text: "<strong>Neutrophil count:</strong> 2,750/µL (normal: 2,000–7,000/µL) — <strong style='color:#1a7a47'>Within normal limits</strong>" }
+    ],
+
+    // Reflection prompt shown in the yellow cue box
+    reflectionPrompt: "💡 <strong>Stop and think:</strong> What does the combination of rapid swelling + crepitus + a recent dental procedure suggest? Why is the absence of fever and normal WBC clinically important? Formulate a working diagnosis before continuing."
+  },
+
+  /* ---------- STEP 2: ANATOMY / IMAGING ---------- */
+  anatomy: {
+    badge:         "🔬 Radiology + Anatomy",
+    badgeColor:    "#e8f5ee",
+    badgeTextColor:"#1a7a47",
+    title:         "CBCT Findings & Fascial Pathways",
+    lead:          "CBCT revealed radiolucency (air) extending into multiple fascial spaces, following the deep investing layer of the cervical fascia. The SCM outline was visible — indicating air is deep to this layer. Explore the anatomy below.",
+
+    // Key imaging finding — plain text
+    imagingFinding: "Air tracking was identified in the lateral pharyngeal, pterygomandibular, submandibular, and sub-masseteric spaces — all following the deep investing layer of the cervical fascia. The outline of the sternocleidomastoid muscle (SCM) was visible, confirming air is positioned deep to this layer.",
+
+    // DIAGRAM — two options:
+    // Option A: Paste an SVG string into diagramSVG (recommended — works offline)
+    // Option B: Set diagramSVG to "" and set diagramImageURL to a hosted image URL
+    // Option C: Set both to "" and a placeholder box will appear
+    diagramSVG: `<svg viewBox="0 0 500 280" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;max-height:280px">
+      <rect x="180" y="6" width="140" height="36" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="250" y="22" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="700">AIR SOURCE</text>
+      <text x="250" y="35" text-anchor="middle" font-size="10" fill="#3b82f6">Endodontic handpiece / air-water syringe</text>
+      <line x1="250" y1="42" x2="250" y2="60" stroke="#6b7280" stroke-width="1.5" stroke-dasharray="4,2"/>
+      <polygon points="250,65 245,57 255,57" fill="#6b7280"/>
+      <rect x="155" y="65" width="190" height="34" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
+      <text x="250" y="82" text-anchor="middle" font-size="11" fill="#4c1d95" font-weight="700">Pterygomandibular Space</text>
+      <text x="250" y="93" text-anchor="middle" font-size="9" fill="#7c3aed">Deep to medial pterygoid · first space reached</text>
+      <line x1="200" y1="99" x2="140" y2="118" stroke="#6b7280" stroke-width="1.5" stroke-dasharray="4,2"/>
+      <polygon points="138,123 133,114 143,115" fill="#6b7280"/>
+      <line x1="250" y1="99" x2="250" y2="118" stroke="#6b7280" stroke-width="1.5" stroke-dasharray="4,2"/>
+      <polygon points="250,123 245,115 255,115" fill="#6b7280"/>
+      <line x1="300" y1="99" x2="360" y2="118" stroke="#6b7280" stroke-width="1.5" stroke-dasharray="4,2"/>
+      <polygon points="362,123 357,114 367,115" fill="#6b7280"/>
+      <rect x="60" y="123" width="150" height="32" rx="7" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
+      <text x="135" y="139" text-anchor="middle" font-size="10" fill="#4c1d95" font-weight="700">Submandibular Space</text>
+      <text x="135" y="150" text-anchor="middle" font-size="9" fill="#7c3aed">Below mylohyoid</text>
+      <rect x="175" y="123" width="150" height="32" rx="7" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/>
+      <text x="250" y="139" text-anchor="middle" font-size="10" fill="#065f46" font-weight="700">Lateral Pharyngeal</text>
+      <text x="250" y="150" text-anchor="middle" font-size="9" fill="#059669">Adjacent to pharynx</text>
+      <rect x="290" y="123" width="155" height="32" rx="7" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
+      <text x="367" y="139" text-anchor="middle" font-size="10" fill="#4c1d95" font-weight="700">Sub-masseteric Space</text>
+      <text x="367" y="150" text-anchor="middle" font-size="9" fill="#7c3aed">Deep to masseter</text>
+      <line x1="135" y1="155" x2="200" y2="175" stroke="#6b7280" stroke-width="1.5" stroke-dasharray="4,2"/>
+      <line x1="250" y1="155" x2="240" y2="175" stroke="#6b7280" stroke-width="1.5" stroke-dasharray="4,2"/>
+      <polygon points="235,179 230,170 245,172" fill="#6b7280"/>
+      <rect x="80" y="180" width="340" height="36" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+      <text x="250" y="197" text-anchor="middle" font-size="11" fill="#7f1d1d" font-weight="700">Deep Investing Layer — Cervical Fascia</text>
+      <text x="250" y="210" text-anchor="middle" font-size="9" fill="#dc2626">Surrounds SCM + trapezius · SCM outline visible on CBCT</text>
+      <line x1="250" y1="216" x2="250" y2="234" stroke="#dc2626" stroke-width="2" stroke-dasharray="4,2"/>
+      <polygon points="250,240 244,231 256,231" fill="#dc2626"/>
+      <rect x="100" y="240" width="300" height="34" rx="8" fill="#fef9c3" stroke="#ca8a04" stroke-width="2"/>
+      <text x="250" y="256" text-anchor="middle" font-size="11" fill="#713f12" font-weight="700">⚠ Endothoracic Fascia → Mediastinum</text>
+      <text x="250" y="269" text-anchor="middle" font-size="9" fill="#92400e">Risk: Pneumomediastinum · Cardiac tamponade · Air emboli</text>
+    </svg>`,
+    diagramImageURL: "",  // fallback image URL if not using SVG
+    diagramCaption:  "Air spread pathway from procedural origin through fascial spaces to mediastinum",
+
+    // Diagram legend entries
+    diagramLegend: [
+      { color: "#3b82f6", label: "Air origin"              },
+      { color: "#7c3aed", label: "Primary spaces affected" },
+      { color: "#059669", label: "Adjacent space"          },
+      { color: "#dc2626", label: "Fascial conduit"         },
+      { color: "#ca8a04", label: "Danger zone"             }
+    ],
+
+    // Expandable anatomy space cards — add as many as needed
+    spaces: [
+      {
+        name:   "Pterygomandibular Space",
+        detail: "<strong>Boundaries:</strong> Medial pterygoid muscle (medially) · Mandibular ramus (laterally) · Pterygomandibular raphe (anteriorly). The inferior alveolar nerve and artery pass through here — direct route for air injected during root canal treatment."
+      },
+      {
+        name:   "Lateral Pharyngeal Space",
+        detail: "<strong>Boundaries:</strong> Pharyngeal constrictor muscles (medially) · Pterygoid muscles and parotid gland (laterally). Connects the oral cavity to the retropharyngeal space with direct routes toward the mediastinum."
+      },
+      {
+        name:   "Submandibular Space",
+        detail: "<strong>Boundaries:</strong> Mylohyoid muscle (superiorly) · Hyoid bone (inferiorly) · Mandible (laterally) · Anterior digastric belly (anteriorly). Explains why swelling extended all the way to the clavicle."
+      },
+      {
+        name:   "Sub-masseteric Space",
+        detail: "<strong>Boundaries:</strong> Lateral ramus of mandible (medially) · Masseter muscle (laterally). Air here compresses the masseter, producing trismus and the jaw pain on lateral excursion seen in this patient."
+      }
+    ],
+
+    // Key anatomy notes list — add/remove as needed
+    anatomyNotes: [
+      { highlight: true,  text: "<strong>Deep investing layer:</strong> Surrounds SCM + trapezius; communicates with endothoracic fascia of the thorax — the pathway in this case. Particularly thick in the posterior triangle." },
+      { highlight: false, text: "<strong>Pretracheal fascia:</strong> Envelopes the anterior visceral compartment (trachea, thyroid gland, esophagus)" },
+      { highlight: false, text: "<strong>Prevertebral fascia:</strong> Surrounds the vertebral column and muscles of the vertebral column" },
+      { highlight: false, text: "<strong>Carotid sheath:</strong> Encloses the common and internal carotid artery, internal jugular vein, and vagus nerve" },
+      { highlight: false, text: "<strong>Alar fascia:</strong> Thin tissue in the retropharyngeal space — creates a danger space for further inferior spread" },
+      { highlight: false, text: "<strong>Buccopharyngeal fascia:</strong> Continuation of pretracheal fascia posteriorly around the visceral compartment" }
+    ]
+  },
+
+  /* ---------- STEP 3: DIAGNOSIS & TREATMENT ---------- */
+  diagnosis: {
+    badge:         "🔎 Diagnosis & Etiology",
+    badgeColor:    "#fff3e0",
+    badgeTextColor:"#b45309",
+    title:         "Cervicofacial Subcutaneous Emphysema",
+    lead:          "This is a rare but potentially life-threatening complication of routine dental procedures. Air escaped under pressure from the dental handpiece into soft tissue planes.",
+
+    // Pathognomonic / key diagnostic finding — plain text
+    keyFinding: "Crepitus on palpation — the characteristic crackling sensation felt when pressing on skin over trapped air — is considered pathognomonic for subcutaneous emphysema. It may not appear for several hours after the causative event, consistent with this patient's 1-hour post-procedure onset.",
+
+    // Differential — "out" = excluded (red ✗), "in" = confirmed (green ✓)
+    differential: [
+      { verdict: "out", text: "<strong>Soft tissue infection / Ludwig's angina:</strong> Excluded — normal WBC (4,450/µL), afebrile (97.6°F), no systemic infection signs. Infection would show elevated WBC, fever, and rapid systemic deterioration." },
+      { verdict: "out", text: "<strong>Angioedema / Allergic reaction:</strong> Excluded — no urticaria, no pruritus; swelling is unilateral and follows fascial planes; no systemic allergic signs." },
+      { verdict: "out", text: "<strong>Hematoma:</strong> Excluded — no discoloration; CBCT shows radiolucency (air = dark/black), not radiodensity (blood = white/bright)." },
+      { verdict: "in",  text: "<strong style='color:#1a5c35'>Subcutaneous emphysema — CONFIRMED:</strong> Crepitus on palpation, CBCT radiolucency tracking along cervical fascia, procedural history, rapid onset within 1 hour of treatment." }
+    ],
+
+    // Aetiology tags
+    causes: [
+      "High-speed dental handpiece", "Air-water syringe", "Tooth extractions",
+      "Subgingival curettage", "Crown preparations", "Blunt facial trauma",
+      "Gas-forming bacteria", "Laparoscopic procedures"
+    ],
+
+    // Management steps — numbered list
+    management: [
+      { urgent: true,  text: "<strong>Airway management — chief priority.</strong> Expanding air in cervical fascial planes can compromise the airway. Monitor O₂ saturation continuously." },
+      { urgent: true,  text: "<strong>Antibiotic prophylaxis.</strong> Oral flora bacteria enter with trapped air and can rapidly establish abscess or cellulitis. Broad-spectrum antibiotics (e.g. penicillin for non-allergic patients) are indicated." },
+      { urgent: true,  text: "<strong>Imaging and extent assessment.</strong> Determine if air has extended to the mediastinum (CBCT ± chest CT). If mediastinal involvement: urgent cardiothoracic surgery consult." },
+      { urgent: true,  text: "<strong>Monitor for complications:</strong> Pneumomediastinum, pleural effusion, arrhythmia, cardiac tamponade, ischemia due to air emboli." },
+      { urgent: false, text: "<strong>Spontaneous resolution.</strong> Trapped air is naturally absorbed and excreted via the lungs within <strong>3–10 days</strong>. Monitor until fully resolved." }
+    ],
+
+    // References — plain text, one per array entry
+    references: [
+      "Rad MV, Chan EKY, Ahmed IH. Cervicofacial subcutaneous and pneumomediastinum secondary to dental treatment. <em>Respir Med Case Reports.</em> 2019;28:100918.",
+      "Jeong C, Yoon S, Chung S, et al. Subcutaneous emphysema related to dental procedures. <em>J Korean Assoc Oral Maxillofac Surg.</em> 2018;44:212–219.",
+      "Wong P, Palacios S, Kashtwari D. Managing subcutaneous emphysema following dental procedures. <em>Decisions in Dentistry.</em> 2017;3(9):36,39–41."
+    ]
+  },
+
+  /* ---------- STEP 4: QUIZ ---------- */
+  quiz: {
+    badge:         "📋 Formative Assessment",
+    badgeColor:    "#f3e8fd",
+    badgeTextColor:"#6d28d9",
+    title:         "Test Your Understanding",
+    lead:          "Five questions based on this case. Answer each to receive immediate feedback. Your score is private — nothing is submitted to the gradebook. Complete all 5 to unlock the activity format chooser.",
+
+    // Questions — correctIndex is 0-based (0=A, 1=B, 2=C, 3=D)
+    // feedbackPerOption: one explanation for each answer option, in order
+    questions: [
+      {
+        question: "The patient's crepitus on palpation is best explained by which of the following?",
+        options: [
+          "A. Accumulation of pus within the submandibular space",
+          "B. Subcutaneous air dissecting along fascial planes",
+          "C. Hematoma formation following vascular injury during the procedure",
+          "D. Tissue edema from an IgE-mediated allergic reaction"
+        ],
+        correctIndex: 1,
+        feedbackPerOption: [
+          "Incorrect. Pus accumulation causes firm, fluctuant swelling — not crepitus. Ludwig's angina would also present with fever, elevated WBC, and systemic signs.",
+          "Correct! Subcutaneous air produces the characteristic crackling/popping sensation (crepitus) when compressed. Crepitus is considered pathognomonic for subcutaneous emphysema.",
+          "Incorrect. A hematoma produces discoloration and firm non-compressible swelling. On CBCT, blood appears as radiodensity, not radiolucency. Crepitus is not a feature of hematoma.",
+          "Incorrect. IgE-mediated angioedema produces smooth, diffuse, non-crepitant swelling — typically bilateral, pruritic, and with systemic signs."
+        ]
+      },
+      {
+        question: "The CBCT showed the sternocleidomastoid outline was clearly visible, with air positioned beneath it. Which fascial layer does this finding indicate was involved?",
+        options: [
+          "A. Prevertebral fascia",
+          "B. Pretracheal fascia",
+          "C. Deep investing layer of the cervical fascia",
+          "D. Carotid sheath"
+        ],
+        correctIndex: 2,
+        feedbackPerOption: [
+          "Incorrect. The prevertebral fascia wraps the vertebral column and its associated muscles — it does not surround or define the contour of the SCM.",
+          "Incorrect. The pretracheal fascia envelopes the anterior visceral compartment (trachea, thyroid, esophagus) — not the SCM.",
+          "Correct! The deep investing layer of the cervical fascia specifically surrounds both the SCM and trapezius muscles. When air accumulates deep to this layer, it outlines the SCM on imaging — exactly what was seen on CBCT. This layer also communicates with the endothoracic fascia, enabling mediastinal spread.",
+          "Incorrect. The carotid sheath is a tubular fascial condensation containing the carotid artery, internal jugular vein, and vagus nerve. It does not enccase the SCM."
+        ]
+      },
+      {
+        question: "This patient's normal WBC count (4,450/µL) and absence of fever are most useful for excluding which condition from the differential?",
+        options: [
+          "A. Hematoma",
+          "B. Subcutaneous emphysema",
+          "C. Acute odontogenic infection / Ludwig's angina",
+          "D. Angioedema"
+        ],
+        correctIndex: 2,
+        feedbackPerOption: [
+          "Incorrect. A hematoma is a vascular complication — it would not produce fever or leukocytosis. Normal WBC does not help differentiate hematoma from emphysema.",
+          "Incorrect. Subcutaneous emphysema does NOT cause elevated WBC or fever — in fact, normal labs support this diagnosis. Normal inflammatory markers are consistent with emphysema.",
+          "Correct! Acute bacterial infections such as Ludwig's angina, cellulitis, or abscess reliably produce fever, leukocytosis, and elevated neutrophil counts. The absence of all three strongly argues against an infectious process as the primary diagnosis.",
+          "Incorrect. Angioedema is a type I hypersensitivity reaction — it does not cause leukocytosis or fever. Normal labs do not specifically help rule out angioedema."
+        ]
+      },
+      {
+        question: "Why is antibiotic prophylaxis initiated even though there are currently no signs of infection?",
+        options: [
+          "A. The patient's history of asthma predisposes her to pulmonary infection",
+          "B. Oral flora bacteria introduced with the trapped air can rapidly establish abscess or cellulitis in fascial spaces",
+          "C. Antibiotics accelerate the reabsorption of subcutaneous air via the lungs",
+          "D. Penicillin physically seals the fascial planes and prevents further air spread"
+        ],
+        correctIndex: 1,
+        feedbackPerOption: [
+          "Incorrect. The history of childhood asthma is noted but is currently inactive and unrelated to the fascial emphysema. Asthma history does not indicate antibiotic prophylaxis here.",
+          "Correct! The dental procedure introduces pressurized air — along with oral microorganisms — directly into sterile fascial planes. The warm, nutrient-rich environment allows rapid bacterial growth. Oral flora (especially anaerobes and streptococci) can quickly establish abscess or cellulitis, justifying immediate prophylaxis.",
+          "Incorrect. Antibiotics have no effect on gas reabsorption. Air is gradually absorbed into surrounding capillaries and excreted via the lungs over 3–10 days — a passive physiological process.",
+          "Incorrect. Antibiotics are antimicrobial agents — they cannot physically seal fascial planes or alter the mechanical spread of air, which follows anatomical paths of least resistance."
+        ]
+      },
+      {
+        question: "The deep investing layer of the cervical fascia communicates directly with which structure, making mediastinal spread a serious potential complication?",
+        options: [
+          "A. Buccopharyngeal fascia",
+          "B. Endothoracic fascia of the thorax",
+          "C. Alar fascia of the retropharyngeal space",
+          "D. Periosteum of the clavicle"
+        ],
+        correctIndex: 1,
+        feedbackPerOption: [
+          "Incorrect. The buccopharyngeal fascia is a continuation of the pretracheal fascia posteriorly around the visceral compartment. It does not provide a direct pathway to the thorax.",
+          "Correct! The deep investing layer communicates inferiorly with the endothoracic fascia of the thorax. This anatomical continuity creates a direct conduit for air (or infection) to spread into the mediastinum — producing pneumomediastinum, a life-threatening complication requiring urgent monitoring and possible cardiothoracic surgery consultation.",
+          "Incorrect. The alar fascia in the retropharyngeal space creates a 'danger space' for posterior spread, but it is not the primary communication between the cervical investing layer and the thoracic cavity.",
+          "Incorrect. The periosteum of the clavicle is not a fascial layer and plays no role in facilitating communication between the cervical and thoracic compartments."
+        ]
+      }
+    ],
+
+    // Score messages indexed 0–5 (number of correct answers)
+    scoreMessages: [
+      "Keep reviewing — revisit the anatomy and diagnosis sections before completing your activity.",
+      "Good effort — check the feedback on each missed question and review the relevant sections.",
+      "Solid understanding — a couple of areas to revisit before finalizing your activity.",
+      "Strong work — you have a good command of the case. Review any missed feedback.",
+      "Almost perfect — review the one missed question's feedback before proceeding.",
+      "Excellent — perfect score! You are well prepared to complete your chosen activity format."
+    ]
+  },
+
+  /* ---------- STEP 5: ACTIVITY FORMAT ---------- */
+  activity: {
+    badge:         "🎓 Your Learning Activity",
+    badgeColor:    "#e0f7f5",
+    badgeTextColor:"#0e7490",
+    title:         "Choose Your Format",
+    lead:          "Select the format that best supports your learning. All formats address the same five required learning objectives — only the method differs.",
+
+    // Required learning objectives — shown as a self-check rubric
+    objectives: [
+      {
+        text: "Identify all anatomical structures involved in the spread of air",
+        hint: "Name each fascial space and the layer serving as the conduit to the thorax"
+      },
+      {
+        text: "Explain the anatomical basis of each symptom and sign",
+        hint: "Link crepitus, trismus, dyspnea, and the craniocaudal extent of swelling to specific structures"
+      },
+      {
+        text: "Interpret the imaging findings using anatomical knowledge",
+        hint: "Explain why the SCM outline is visible on CBCT and what that indicates about fascial layer involvement"
+      },
+      {
+        text: "Construct and justify a differential diagnosis",
+        hint: "Explain what evidence ruled in emphysema and ruled out infection, hematoma, and angioedema"
+      },
+      {
+        text: "Describe the treatment rationale with anatomical reasoning",
+        hint: "Explain why airway management and antibiotics are prioritized given the fascial pathways involved"
+      }
+    ],
+
+    // Submission platform label shown in the footer
+    submissionPlatform: "Brightspace → Assignments → Clinical Case Week 1",
+
+    // Format options — add or remove formats as needed
+    formats: [
+      {
+        id:      "written",
+        icon:    "📄",
+        name:    "Written Case Analysis",
+        desc:    "A structured written response addressing each required objective in paragraph or outline form (400–600 words)",
+        guidance:"Write 400–600 words organized around the five required objectives. Use clear section headings. Move logically: anatomy → symptoms → diagnosis → management. Cite at least 2 of the 3 provided references. Submit as a .PDF or Word document.",
+        submission: "📤 Upload to Brightspace → Assignments → Clinical Case Week 1 before the Week 1 synchronous session."
+      },
+      {
+        id:      "concept",
+        icon:    "🗺️",
+        name:    "Concept Map",
+        desc:    "A diagram linking symptoms → anatomical structures → pathophysiology → clinical outcomes with labeled relationship arrows",
+        guidance:"Use any tool: Lucidchart, Miro, draw.io, PowerPoint SmartArt, or hand-drawn (photographed clearly). Requirements: minimum 12 labeled nodes; every connection arrow must carry a relationship label (e.g. 'causes', 'enables spread to', 'rules out'). Color-coding by category is encouraged.",
+        submission: "📤 Export as PNG or PDF. Upload to Brightspace → Assignments → Clinical Case Week 1."
+      },
+      {
+        id:      "annotated",
+        icon:    "🖼️",
+        name:    "Annotated Images",
+        desc:    "Annotated screenshots of the CBCT or 3D anatomy models with labeled structures and one-sentence clinical relevance notes",
+        guidance:"Take screenshots from the 3D Sketchfab models and/or CBCT viewer in the case. Annotate using Preview (Mac), Paint/Photos (Windows), PowerPoint, or any annotation app. Each annotation must include: (1) the structure name, and (2) a one-sentence statement of clinical relevance. Minimum 4 annotated images.",
+        submission: "📤 Export as PDF or a single combined image file. Upload to Brightspace → Assignments → Clinical Case Week 1."
+      },
+      {
+        id:      "video",
+        icon:    "🎥",
+        name:    "Video Explanation",
+        desc:    "A 3–5 minute recorded walkthrough explaining the anatomical basis of the patient's presentation to a peer",
+        guidance:"Record a 3–5 minute video speaking through the case as if explaining it to a classmate. You may use annotated images, the 3D models, or the anatomy diagram as on-screen visual aids. No formal slides required. Tools: phone camera, Zoom recording, Loom, QuickTime, or similar.",
+        submission: "📤 Upload the video file directly, or paste a shareable link (Loom, Google Drive) into the Brightspace assignment text box."
+      },
+      {
+        id:      "presentation",
+        icon:    "📊",
+        name:    "Small-Group Presentation",
+        desc:    "A 5–7 minute group presentation summarizing case findings, anatomy, and management (2–3 students per group)",
+        guidance:"Form a group of 2–3 students. Prepare a 5–7 minute presentation for the Week 1 synchronous session. Divide the case so each member presents at least one section. Cover: patient presentation, anatomical pathway of air spread, differential diagnosis rationale, and management priorities.",
+        submission: "📅 Register your group with the course coordinator before the deadline. Attendance and presentation during the synchronous session serves as your submission — no Brightspace upload required."
+      }
+    ]
+  }
+
+}; /* ============ END OF CASE DATA ============ */
+
+
+/* ============================================================
+   RENDERING ENGINE — DO NOT EDIT BELOW THIS LINE
+   ============================================================ */
+(function () {
+  var d = CASE_DATA;
+  var current = 0;
+  var answered = {};
+  var correct = d.quiz.questions.map(function(q){ return q.correctIndex; });
+
+  function el(tag, attrs, innerHTML) {
+    var e = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function(k){ e.setAttribute(k, attrs[k]); });
+    if (innerHTML !== undefined) e.innerHTML = innerHTML;
+    return e;
+  }
+
+  function buildHeader() {
+    var h = el('div', { class: 'app-header' });
+    h.style.background = 'linear-gradient(135deg, ' + d.headerColor1 + ' 0%, ' + d.headerColor2 + ' 100%)';
+    h.innerHTML = '<h1 class="case-title">Clinical Case — ' + d.week + '</h1><p class="case-meta">' + d.course + ' &nbsp;·&nbsp; ' + d.school + '</p>';
+    return h;
+  }
+
+  function buildProgress() {
+    var labels = ['Presentation','Anatomy','Diagnosis','Quiz','Activity'];
+    var w = el('div', { class: 'progress-wrap' });
+    var lRow = el('div', { class: 'progress-labels' });
+    var bRow = el('div', { class: 'progress-bar' });
+    labels.forEach(function(l, i) {
+      var pl = el('div', { class: 'progress-label' + (i===0?' active':''), id: 'pl'+i }, l);
+      pl.style.color = i===0 ? d.headerColor1 : '';
+      pl.onclick = function(){ goTo(i); };
+      lRow.appendChild(pl);
+      var ps = el('div', { class: 'progress-step' + (i===0?' active':''), id: 'ps'+i });
+      ps.style.background = i===0 ? d.headerColor1 : '';
+      bRow.appendChild(ps);
+    });
+    w.appendChild(lRow);
+    w.appendChild(bRow);
+    return w;
+  }
+
+  function badge(text, bgColor, textColor) {
+    var b = el('div', { class: 'section-badge' }, text);
+    b.style.background = bgColor;
+    b.style.color = textColor;
+    return b;
+  }
+
+  function card(titleText, bodyHTML) {
+    var c = el('div', { class: 'card' });
+    if (titleText) c.appendChild(el('div', { class: 'card-title' }, titleText));
+    var body = el('div'); body.innerHTML = bodyHTML;
+    c.appendChild(body);
+    return c;
+  }
+
+  function navRow(backIdx, fwdLabel, fwdIdx) {
+    var row = el('div', { class: 'nav-row' });
+    if (backIdx !== null) {
+      var back = el('button', { class: 'btn' }, '← Back');
+      back.onclick = function(){ goTo(backIdx); };
+      row.appendChild(back);
+    } else {
+      row.appendChild(el('span', {}, ''));
+    }
+    if (fwdLabel) {
+      var fwd = el('button', { class: 'btn btn-primary' }, fwdLabel + ' →');
+      fwd.style.background = d.headerColor1;
+      fwd.style.borderColor = d.headerColor1;
+      fwd.onclick = function(){ goTo(fwdIdx); };
+      row.appendChild(fwd);
+    } else {
+      row.appendChild(el('span', { style: 'font-size:12px;color:#999' }, 'Submit via ' + d.activity.submissionPlatform));
+    }
+    return row;
+  }
+
+  /* === SECTION 0 === */
+  function buildSection0() {
+    var p = d.presentation;
+    var sec = el('div', { class: 'section active', id: 'sec0' });
+    sec.appendChild(badge(p.badge, p.badgeColor, p.badgeTextColor));
+    sec.appendChild(el('h2', { class: 'sec-title' }, p.title));
+    sec.appendChild(el('p', { class: 'lead' }, p.lead));
+
+    sec.appendChild(card('Chief Complaint', '<p style="font-size:14px;line-height:1.7;color:#333">' + p.chiefComplaint + '</p>'));
+
+    var vCard = el('div', { class: 'card' });
+    vCard.appendChild(el('div', { class: 'card-title' }, 'Vital Signs'));
+    var vGrid = el('div', { class: 'vitals-grid' });
+    p.vitals.forEach(function(v) {
+      vGrid.innerHTML += '<div class="vital"><div class="vital-value">' + v.value + '</div><div class="vital-label">' + v.label + '</div><div class="vital-flag flag-' + v.flag + '">' + v.flagText + '</div></div>';
+    });
+    vCard.appendChild(vGrid);
+    sec.appendChild(vCard);
+
+    var examHTML = '<ul class="sym-list">' + p.examFindings.map(function(f) {
+      return '<li><div class="sym-icon ' + f.type + '">' + (f.type==='present'?'✓':f.type==='absent'?'✗':'→') + '</div><div>' + f.text + '</div></li>';
+    }).join('') + '</ul>';
+    sec.appendChild(card('Physical Examination Findings', examHTML));
+
+    var labHTML = '<ul class="sym-list">' + p.labResults.map(function(l) {
+      return '<li><div class="sym-icon neutral">→</div><div>' + l.text + '</div></li>';
+    }).join('') + '</ul>';
+    sec.appendChild(card('Laboratory Values', labHTML));
+
+    var cue = el('div', { class: 'cue-box' }); cue.innerHTML = p.reflectionPrompt;
+    sec.appendChild(cue);
+    sec.appendChild(navRow(null, 'Imaging &amp; Anatomy', 1));
+    return sec;
+  }
+
+  /* === SECTION 1 === */
+  function buildSection1() {
+    var a = d.anatomy;
+    var sec = el('div', { class: 'section', id: 'sec1' });
+    sec.appendChild(badge(a.badge, a.badgeColor, a.badgeTextColor));
+    sec.appendChild(el('h2', { class: 'sec-title' }, a.title));
+    sec.appendChild(el('p', { class: 'lead' }, a.lead));
+    sec.appendChild(card('Key Imaging Finding', '<p style="font-size:13px;color:#333;line-height:1.7">' + a.imagingFinding + '</p>'));
+
+    var dWrap = el('div', { class: 'diagram-wrap' });
+    dWrap.appendChild(el('div', { style: 'font-size:12px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px' }, 'Anatomical Pathway Diagram'));
+    if (a.diagramSVG) {
+      var svgWrap = el('div'); svgWrap.innerHTML = a.diagramSVG; dWrap.appendChild(svgWrap);
+    } else if (a.diagramImageURL) {
+      dWrap.appendChild(el('img', { src: a.diagramImageURL, style: 'width:100%;border-radius:8px' }));
+    } else {
+      dWrap.appendChild(el('div', { class: 'diagram-placeholder' }, '[ Anatomy diagram goes here ]\n\nReplace diagramSVG in CASE_DATA with your SVG code,\nor set diagramImageURL to a hosted image URL.'));
+    }
+    if (a.diagramLegend && a.diagramLegend.length) {
+      var leg = el('div', { class: 'diagram-legend' });
+      a.diagramLegend.forEach(function(l) {
+        leg.innerHTML += '<div class="legend-item"><div class="legend-dot" style="background:' + l.color + ';border-radius:3px"></div>' + l.label + '</div>';
+      });
+      dWrap.appendChild(leg);
+    }
+    sec.appendChild(dWrap);
+
+    sec.appendChild(el('h3', { style: 'font-size:15px;font-weight:600;margin-bottom:12px' }, 'Tap each space to review its anatomical boundaries'));
+    var spaceGrid = el('div', { class: 'space-grid' });
+    a.spaces.forEach(function(s, i) {
+      var sc = el('div', { class: 'space-card' });
+      sc.innerHTML = '<div class="space-name">' + s.name + '</div><div class="space-hint">Tap to expand ↓</div><div class="space-detail">' + s.detail + '</div>';
+      sc.onclick = function() {
+        var was = sc.classList.contains('expanded');
+        document.querySelectorAll('.space-card').forEach(function(c){ c.classList.remove('expanded'); });
+        if (!was) sc.classList.add('expanded');
+      };
+      spaceGrid.appendChild(sc);
+    });
+    sec.appendChild(spaceGrid);
+
+    var notesHTML = '<ul class="sym-list">' + a.anatomyNotes.map(function(n) {
+      var icon = n.highlight
+        ? '<div class="sym-icon neutral" style="background:#dbeafe;color:#1e40af;font-size:8px;font-weight:700;min-width:20px">KEY</div>'
+        : '<div class="sym-icon neutral">→</div>';
+      return '<li>' + icon + '<div>' + n.text + '</div></li>';
+    }).join('') + '</ul>';
+    sec.appendChild(card('Fascial Layers of the Neck', notesHTML));
+    sec.appendChild(navRow(0, 'Diagnosis &amp; Treatment', 2));
+    return sec;
+  }
+
+  /* === SECTION 2 === */
+  function buildSection2() {
+    var g = d.diagnosis;
+    var sec = el('div', { class: 'section', id: 'sec2' });
+    sec.appendChild(badge(g.badge, g.badgeColor, g.badgeTextColor));
+    sec.appendChild(el('h2', { class: 'sec-title' }, g.title));
+    sec.appendChild(el('p', { class: 'lead' }, g.lead));
+
+    var kf = el('div', { class: 'card', style: 'border-left:4px solid ' + d.headerColor1 });
+    kf.innerHTML = '<div class="card-title">Pathognomonic / Key Diagnostic Finding</div><p style="font-size:14px;line-height:1.7;color:#333">' + g.keyFinding + '</p>';
+    sec.appendChild(kf);
+
+    var diffHTML = g.differential.map(function(d) {
+      var icon = d.verdict==='in' ? '<div class="diff-icon in">✓</div>' : '<div class="diff-icon out">✗</div>';
+      return '<div class="diff-item">' + icon + '<div style="font-size:13px;line-height:1.5">' + d.text + '</div></div>';
+    }).join('');
+    sec.appendChild(card('Differential Diagnosis — Why Each Was Excluded or Confirmed', diffHTML));
+
+    var tagHTML = '<p style="font-size:13px;color:#555;margin-bottom:10px;line-height:1.6">Air is forced into fascial planes under pressure. Other reported causes:</p><div class="tag-wrap">' + g.causes.map(function(c){ return '<span class="tag">' + c + '</span>'; }).join('') + '</div>';
+    sec.appendChild(card('Causes of Cervicofacial Subcutaneous Emphysema', tagHTML));
+
+    var mgmtHTML = '<ul class="sym-list">' + g.management.map(function(m, i) {
+      var icon = m.urgent
+        ? '<div class="sym-icon neutral" style="background:#fef3c7;color:#b45309">' + (i+1) + '</div>'
+        : '<div class="sym-icon neutral" style="background:#e8f5ee;color:#1a7a47">✓</div>';
+      return '<li>' + icon + '<div>' + m.text + '</div></li>';
+    }).join('') + '</ul>';
+    sec.appendChild(card('Treatment & Management', mgmtHTML));
+
+    var refHTML = '<p class="refs">' + g.references.map(function(r, i){ return (i+1) + '. ' + r; }).join('<br>') + '</p>';
+    sec.appendChild(card('References', refHTML));
+    sec.appendChild(navRow(1, 'Formative Quiz', 3));
+    return sec;
+  }
+
+  /* === SECTION 3 === */
+  function buildSection3() {
+    var q = d.quiz;
+    var sec = el('div', { class: 'section', id: 'sec3' });
+    sec.appendChild(badge(q.badge, q.badgeColor, q.badgeTextColor));
+    sec.appendChild(el('h2', { class: 'sec-title' }, q.title));
+    sec.appendChild(el('p', { class: 'lead' }, q.lead));
+
+    var qContainer = el('div', { id: 'quizContainer' });
+    q.questions.forEach(function(qdata, qi) {
+      var qDiv = el('div', { class: 'quiz-q', id: 'q' + qi });
+      qDiv.appendChild(el('div', { class: 'quiz-num' }, 'Question ' + (qi+1) + ' of ' + q.questions.length));
+      qDiv.appendChild(el('div', { class: 'quiz-label' }, qdata.question));
+      var opts = el('div', { class: 'quiz-options' });
+      qdata.options.forEach(function(optText, oi) {
+        var btn = el('button', { class: 'quiz-opt' }, optText);
+        btn.onclick = (function(qi_, oi_){ return function(){ answerQ(qi_, oi_); }; })(qi, oi);
+        opts.appendChild(btn);
+      });
+      qDiv.appendChild(opts);
+      qDiv.appendChild(el('div', { class: 'quiz-feedback', id: 'fb' + qi }));
+      qContainer.appendChild(qDiv);
+    });
+    sec.appendChild(qContainer);
+
+    var scoreDiv = el('div', { id: 'quizScore', style: 'display:none' });
+    scoreDiv.innerHTML = '<div class="score-box"><div class="score-ring"><div class="score-num" id="scoreNum">0</div><div class="score-denom">out of ' + q.questions.length + '</div></div><div class="score-msg" id="scoreMsg"></div></div>';
+    var fwdBtn = el('button', { class: 'btn btn-primary', style: 'display:block;margin:0 auto' }, 'Choose Your Activity Format →');
+    fwdBtn.style.background = d.headerColor1;
+    fwdBtn.onclick = function(){ goTo(4); };
+    scoreDiv.querySelector('.score-box').appendChild(fwdBtn);
+    sec.appendChild(scoreDiv);
+
+    var nRow = el('div', { class: 'nav-row' });
+    var backBtn = el('button', { class: 'btn' }, '← Back'); backBtn.onclick = function(){ goTo(2); };
+    nRow.appendChild(backBtn);
+    nRow.appendChild(el('span', { class: 'quiz-counter', id: 'quizProgress' }, '0 of ' + q.questions.length + ' answered'));
+    sec.appendChild(nRow);
+    return sec;
+  }
+
+  /* === SECTION 4 === */
+  function buildSection4() {
+    var a = d.activity;
+    var sec = el('div', { class: 'section', id: 'sec4' });
+    sec.appendChild(badge(a.badge, a.badgeColor, a.badgeTextColor));
+    sec.appendChild(el('h2', { class: 'sec-title' }, a.title));
+    sec.appendChild(el('p', { class: 'lead' }, a.lead));
+
+    var fGrid = el('div', { class: 'format-grid' });
+    a.formats.forEach(function(f) {
+      var fc = el('div', { class: 'format-card' });
+      fc.innerHTML = '<div class="format-icon">' + f.icon + '</div><div class="format-name">' + f.name + '</div><div class="format-desc">' + f.desc + '</div>';
+      fc.onclick = function() {
+        document.querySelectorAll('.format-card').forEach(function(c){ c.classList.remove('selected'); });
+        fc.classList.add('selected');
+        var rubricHTML = a.objectives.map(function(o) {
+          return '<div class="rubric-item"><div class="rubric-check" onclick="this.classList.toggle(\'checked\')">✓</div><div class="rubric-text">' + o.text + '<small>' + o.hint + '</small></div></div>';
+        }).join('');
+        document.getElementById('rubricList').innerHTML = rubricHTML;
+        document.getElementById('fmtGuideTitle').textContent = f.name + ' — Guidance';
+        document.getElementById('fmtGuideContent').textContent = f.guidance;
+        document.getElementById('fmtSubmission').innerHTML = '<strong>Submission:</strong> ' + f.submission;
+        document.getElementById('rubricSection').style.display = 'block';
+        document.getElementById('rubricSection').scrollIntoView({ behavior:'smooth', block:'start' });
+      };
+      fGrid.appendChild(fc);
+    });
+    sec.appendChild(fGrid);
+
+    var rubSec = el('div', { id: 'rubricSection', style: 'display:none' });
+    var rCard = el('div', { class: 'card' });
+    rCard.innerHTML = '<div class="card-title">Required Learning Objectives — All Formats</div><p style="font-size:12px;color:#888;margin-bottom:14px">Check off each objective as you complete it in your chosen format.</p><div id="rubricList"></div>';
+    rubSec.appendChild(rCard);
+    var gCard = el('div', { class: 'card' });
+    gCard.innerHTML = '<div class="card-title" id="fmtGuideTitle">Format Guidance</div><div id="fmtGuideContent" style="font-size:13px;line-height:1.7;color:#333"></div>';
+    rubSec.appendChild(gCard);
+    var infoBox = el('div', { class: 'info-box', id: 'fmtSubmission' });
+    rubSec.appendChild(infoBox);
+    sec.appendChild(rubSec);
+    sec.appendChild(navRow(3, null, null));
+    return sec;
+  }
+
+  /* === NAVIGATION === */
+  function goTo(n) {
+    document.getElementById('sec' + current).classList.remove('active');
+    var oldP = document.getElementById('ps' + current);
+    var oldL = document.getElementById('pl' + current);
+    oldP.classList.remove('active');
+    oldL.classList.remove('active');
+    if (n > current) { oldP.classList.add('done'); oldL.classList.add('done'); }
+    current = n;
+    document.getElementById('sec' + n).classList.add('active');
+    var newP = document.getElementById('ps' + n);
+    var newL = document.getElementById('pl' + n);
+    newP.classList.remove('done'); newP.classList.add('active'); newP.style.background = d.headerColor1;
+    newL.classList.remove('done'); newL.classList.add('active'); newL.style.color = d.headerColor1;
+    window.scrollTo(0, 0);
+  }
+  window.goTo = goTo;
+
+  /* === QUIZ LOGIC === */
+  function answerQ(qi, oi) {
+    if (answered[qi] !== undefined) return;
+    answered[qi] = oi;
+    var opts = document.querySelectorAll('#q' + qi + ' .quiz-opt');
+    opts.forEach(function(o, i) {
+      o.disabled = true;
+      if (i === correct[qi]) o.classList.add(oi === correct[qi] ? 'correct' : 'reveal');
+    });
+    if (oi !== correct[qi]) opts[oi].classList.add('wrong');
+    var fb = document.getElementById('fb' + qi);
+    fb.style.display = 'block';
+    fb.className = 'quiz-feedback ' + (oi === correct[qi] ? 'correct' : 'wrong');
+    fb.textContent = d.quiz.questions[qi].feedbackPerOption[oi];
+    var count = Object.keys(answered).length;
+    document.getElementById('quizProgress').textContent = count + ' of ' + d.quiz.questions.length + ' answered';
+    if (count === d.quiz.questions.length) {
+      var score = 0;
+      for (var k in answered) { if (answered[k] === correct[k]) score++; }
+      document.getElementById('scoreNum').textContent = score;
+      document.getElementById('scoreMsg').textContent = d.quiz.scoreMessages[score] || '';
+      document.getElementById('quizScore').style.display = 'block';
+    }
+  }
+  window.answerQ = answerQ;
+
+  /* === MOUNT === */
+  function mount() {
+    var root = document.getElementById('appRoot');
+    root.appendChild(buildHeader());
+    root.appendChild(buildProgress());
+    var body = el('div', { class: 'app-body' });
+    body.appendChild(buildSection0());
+    body.appendChild(buildSection1());
+    body.appendChild(buildSection2());
+    body.appendChild(buildSection3());
+    body.appendChild(buildSection4());
+    root.appendChild(body);
+    // Set initial progress bar color
+    document.getElementById('ps0').style.background = d.headerColor1;
+    document.getElementById('pl0').style.color = d.headerColor1;
+  }
+
+  document.addEventListener('DOMContentLoaded', mount);
+})();
+</script>
+</body>
+</html>
